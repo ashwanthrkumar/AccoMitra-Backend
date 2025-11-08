@@ -1,0 +1,20 @@
+import admin from "firebase-admin";
+
+const verifyToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Missing or invalid token" });
+  }
+
+  const idToken = authHeader.split("Bearer ")[1];
+  try {
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    console.error("Token verification failed:", err);
+    res.status(403).json({ message: "Unauthorized" });
+  }
+};
+
+export default verifyToken;
